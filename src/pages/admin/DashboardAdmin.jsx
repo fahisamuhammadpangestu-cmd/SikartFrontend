@@ -131,12 +131,12 @@ const DashboardAdmin = () => {
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                     />
                     <Line 
-                      type="monotone" 
+                      type="monotoneX" 
                       dataKey="value" 
                       stroke="#4f46e5" 
                       strokeWidth={3}
                       dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#4f46e5' }}
-                      activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }} 
+                      activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }}
                     />
                   </LineChart>
                 </ResponsiveContainer>

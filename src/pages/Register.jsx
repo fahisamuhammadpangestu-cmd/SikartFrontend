@@ -52,7 +52,7 @@ const Register = () => {
               <Shield size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold tracking-wider">RT 03 Cimuning</h2>
+              <h2 className="text-xl font-bold tracking-wider">SikaRT</h2>
               <p className="text-xs text-gray-400 tracking-widest uppercase">PORTAL WARGA</p>
             </div>
           </div>
@@ -60,7 +60,7 @@ const Register = () => {
             Akses layanan lingkungan dengan lebih mudah & cepat.
           </h1>
           <p className="text-gray-400 text-lg mb-12">
-            Daftarkan diri Anda sebagai warga RT 03 untuk mengakses informasi iuran, transparansi kas, dan layanan administrasi secara digital.
+            Daftarkan diri Anda sebagai warga untuk mengakses informasi iuran, transparansi kas, dan layanan administrasi secara digital.
           </p>
           <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 flex items-start gap-4 backdrop-blur-sm">
             <div className="bg-blue-600/20 text-blue-500 p-3 rounded-full shrink-0">

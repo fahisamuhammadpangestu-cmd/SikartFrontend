@@ -5,16 +5,17 @@ import {
 } from 'lucide-react';
 
 const LaporanWarga = () => {
-  // 1. STATE UNTUK FILTER
+  // 1. STATE UNTUK FILTER (Default: Semua transaksi)
   const [filters, setFilters] = useState({
-    bulan: (new Date().getMonth() + 1).toString(), // Default bulan ini
-    tahun: new Date().getFullYear().toString(),    // Default tahun ini
-    jenis: ''                                      // Default semua transaksi
+    bulan: '', 
+    tahun: '',    
+    jenis: ''                                      
   });
 
-  // 2. STATE UNTUK DATA API
+  // 2. STATE UNTUK DATA API (Pastikan ada saldoAkhir dan totalMasukPeriode)
   const [laporan, setLaporan] = useState({
-    totalMasuk: 0,
+    saldoAkhir: 0,
+    totalMasukPeriode: 0,
     totalKeluar: 0,
     transaksi: []
   });
@@ -37,13 +38,15 @@ const LaporanWarga = () => {
   const fetchLaporan = async () => {
     setIsLoading(true);
     try {
-      // Mengirim filter sebagai query parameter (?bulan=...&tahun=...&jenis=...)
       const response = await axiosInstance.get('/warga/laporan', { params: filters });
       
       if (response.data.status === 'success') {
         const apiData = response.data.data;
+        
+        // PENGHUBUNG DATA (Pastikan nama ini cocok dengan API Laravel-mu)
         setLaporan({
-          totalMasuk: apiData.ringkasan.total_masuk_periode,
+          saldoAkhir: apiData.ringkasan.saldo_akhir_keseluruhan, 
+          totalMasukPeriode: apiData.ringkasan.total_masuk_periode,
           totalKeluar: apiData.ringkasan.total_keluar_periode,
           transaksi: apiData.detail_transaksi
         });
@@ -55,12 +58,10 @@ const LaporanWarga = () => {
     }
   };
 
-  // Ambil data pertama kali saat halaman dibuka
   useEffect(() => {
     fetchLaporan();
   }, []);
 
-  // Handler saat tombol "Tampilkan Laporan" diklik
   const handleFilterSubmit = () => {
     fetchLaporan();
   };
@@ -80,9 +81,8 @@ const LaporanWarga = () => {
     { id: '11', nama: 'November' }, { id: '12', nama: 'Desember' }
   ];
 
-  // Buat daftar tahun (Misal dari 2024 sampai tahun ini + 1)
   const tahunSekarang = new Date().getFullYear();
-  const daftarTahun = ['']; // Pilihan 'Semua Tahun'
+  const daftarTahun = ['']; 
   for (let i = 2024; i <= tahunSekarang + 1; i++) {
     daftarTahun.push(i.toString());
   }
@@ -160,19 +160,19 @@ const LaporanWarga = () => {
         </div>
       </div>
 
-      {/* 3. KARTU RINGKASAN STATISTIK (Hanya 2 Grid, Saldo Akhir dihapus) */}
+      {/* 3. KARTU RINGKASAN STATISTIK */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        {/* Total Masuk */}
+        {/* Saldo Kas Saat Ini */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 border-l-4 border-l-[#10B981] flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Masuk (Filter)</p>
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Saldo Kas Saat Ini</p>
             <div className="p-1.5 bg-green-50 text-green-500 rounded-md">
               <TrendingUp size={16} />
             </div>
           </div>
           <div>
-            <h3 className="text-3xl font-bold text-[#10B981] mb-1">{formatRupiah(laporan.totalMasuk)}</h3>
+            <h3 className="text-3xl font-bold text-[#10B981] mb-1">{formatRupiah(laporan.saldoAkhir)}</h3>
           </div>
         </div>
 
@@ -194,7 +194,6 @@ const LaporanWarga = () => {
       {/* 4. TABEL DETAIL TRANSAKSI */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
         
-        {/* Header Tabel (Tombol Unduh dihapus) */}
         <div className="p-5 border-b border-gray-100 bg-gray-50/50">
           <h2 className="text-sm font-bold text-gray-900">Detail Transaksi Laporan</h2>
         </div>
@@ -231,8 +230,8 @@ const LaporanWarga = () => {
                         {trx.jenis === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 whitespace-normal min-w-[200px]">
-                      {trx.keterangan || (trx.kategori ? trx.kategori.nama_kategori : '-')}
+                    <td className="px-6 py-4 text-sm text-gray-700 whitespace-normal min-w-[200px] font-medium">
+                      {trx.tagihan ? trx.tagihan.nama_tagihan : (trx.keterangan || (trx.kategori ? trx.kategori.nama_kategori : '-'))}
                     </td>
                     <td className="px-6 py-4 text-sm font-bold text-green-500 text-right">
                       {trx.jenis === 'pemasukan' ? formatRupiah(trx.nominal) : '-'}
@@ -257,14 +256,13 @@ const LaporanWarga = () => {
         <div className="p-5 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/30">
           <div className="text-xs text-gray-500">
             <p className="mb-1">Menampilkan <b>{laporan.transaksi?.length || 0}</b> transaksi</p>
-            <p className="font-bold">
-              <span className="text-green-600">Total Masuk: {formatRupiah(laporan.totalMasuk)}</span> 
+            <p className="font-bold text-sm mt-2">
+              <span className="text-green-600">Masuk (Periode): {formatRupiah(laporan.totalMasukPeriode)}</span> 
               <span className="mx-2 text-gray-300">|</span> 
-              <span className="text-red-500">Total Keluar: {formatRupiah(laporan.totalKeluar)}</span>
+              <span className="text-red-500">Keluar (Periode): {formatRupiah(laporan.totalKeluar)}</span>
             </p>
           </div>
           
-          {/* Paginasi Sederhana */}
           <div className="flex items-center gap-1">
             <button className="w-8 h-8 flex justify-center items-center border border-gray-200 rounded text-gray-400 hover:text-gray-600 transition-colors">
               <ChevronLeft size={16} />

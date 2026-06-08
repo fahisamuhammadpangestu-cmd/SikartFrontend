@@ -62,7 +62,7 @@ const Login = () => {
             <Building2 className="text-white w-7 h-7 xl:w-8 xl:h-8" />
           </div>
           
-          <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-4">RT 03 Cimuning</h1>
+          <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-4">SikaRT</h1>
           <p className="text-gray-400 text-sm lg:text-base xl:text-lg mb-10 xl:mb-14 leading-relaxed max-w-md xl:max-w-lg">
             Sistem Informasi Manajemen Warga & Administrasi Lingkungan yang Terintegrasi.
           </p>
@@ -84,8 +84,8 @@ const Login = () => {
                 <FileText className="text-blue-400 w-6 h-6 xl:w-7 xl:h-7" />
               </div>
               <div>
-                <h3 className="text-white font-medium text-base xl:text-lg">Surat Pengantar</h3>
-                <p className="text-gray-400 text-xs xl:text-sm mt-1.5">Pengajuan dokumen warga menjadi lebih cepat dan terdata.</p>
+                <h3 className="text-white font-medium text-base xl:text-lg">Cetak Laporan</h3>
+                <p className="text-gray-400 text-xs xl:text-sm mt-1.5">Mencetak laporan keuangan supaya lebih transparan</p>
               </div>
             </div>
           </div>

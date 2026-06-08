@@ -81,15 +81,15 @@ const Sidebar = ({ role }) => {
       <div className="p-6 border-b border-gray-800">
         {role === 'admin' ? (
           <div>
-            <h1 className="text-white text-xl font-bold tracking-wider">RT 03 / RW 013</h1>
+            <h1 className="text-white text-xl font-bold tracking-wider">SikaRT</h1>
             <p className="text-[10px] text-gray-500 font-semibold mt-1 tracking-widest uppercase">PANEL ADMIN</p>
           </div>
         ) : (
           <div className="flex items-center gap-3">
             <Shield className="text-white w-8 h-8" />
             <div>
-              <h1 className="text-white text-base font-bold leading-tight">Kas RT 03/RW 13</h1>
-              <p className="text-[11px] text-gray-400 mt-0.5">Kel Cimuning</p>
+              <h1 className="text-white text-base font-bold leading-tight">SikaRT</h1>
+              <p className="text-[11px] text-gray-400 mt-0.5">Panel Warga</p>
             </div>
           </div>
         )}

@@ -8,7 +8,7 @@ const DashboardAdmin = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
 
-  // Menyiapkan kerangka data awal (default state) agar tidak terjadi error undefined
+  // Menyiapkan kerangka data awal 
   const [data, setData] = useState({
     ringkasan: {
       total_pengeluaran: 0,
@@ -170,9 +170,9 @@ const DashboardAdmin = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex-1 flex flex-col">
               <h3 className="text-base font-bold text-gray-900 mb-6">Transaksi Terakhir</h3>
               
-              {data.transaksi_terakhir.length > 0 ? (
+              {data.transaksi_terakhir.filter(trx => trx.status !== 'pending').length > 0 ? (
                 <div className="flex flex-col gap-4">
-                  {data.transaksi_terakhir.map((trx) => (
+                  {data.transaksi_terakhir.filter(trx => trx.status !== 'pending').map((trx) => (
                     <div key={trx.id} className="flex justify-between items-center border-b border-gray-50 pb-3 last:border-0">
                       <div className="overflow-hidden pr-2">
                         <p className="text-sm font-bold text-gray-800 truncate">

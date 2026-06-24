@@ -94,7 +94,7 @@ const LaporanWarga = () => {
       <div className="flex justify-between items-center mt-2">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Laporan Kas RT</h1>
-          <p className="text-sm text-gray-500 mt-1">Monitoring transparansi kas warga RT 03/RW 13</p>
+          <p className="text-sm text-gray-500 mt-1">Monitoring transparansi kas warga</p>
         </div>
         <div className="flex items-center gap-4 text-gray-500">
           <button className="hover:text-gray-800 transition-colors"><Bell size={20} /></button>

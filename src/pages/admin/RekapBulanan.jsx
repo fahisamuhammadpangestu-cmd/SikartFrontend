@@ -75,7 +75,7 @@ const RekapBulanan = () => {
     // 1. Menulis Judul
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
-    doc.text("Laporan Keuangan RT 03 Cimuning", 14, 20);
+    doc.text("Laporan Keuangan RT", 14, 20);
 
     // 2. Menulis Narasi
     doc.setFontSize(11);
@@ -111,7 +111,7 @@ const RekapBulanan = () => {
     });
 
     // 6. Menyimpan dan Mengunduh File PDF
-    const namaFile = `Laporan_Keuangan_RT03_${new Date().getTime()}.pdf`;
+    const namaFile = `Laporan_Keuangan_${new Date().getTime()}.pdf`;
     doc.save(namaFile);
   };
 
@@ -122,7 +122,7 @@ const RekapBulanan = () => {
       <div className="mt-2 border-b border-gray-100 pb-4 flex justify-between items-start sm:items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Laporan Keuangan</h1>
-          <p className="text-sm text-gray-500 mt-1">Rekapitulasi seluruh kas masuk dan keluar RT 03 Cimuning</p>
+          <p className="text-sm text-gray-500 mt-1">Rekapitulasi seluruh kas masuk dan keluar</p>
         </div>
         <button 
           onClick={handlePrintPDF}

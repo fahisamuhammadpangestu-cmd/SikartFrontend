@@ -225,8 +225,9 @@ const ManajemenKas = () => {
               </div>
               
               <div className="flex-1 overflow-y-auto">
-                {riwayatTransaksi.length > 0 ? (
-                  riwayatTransaksi.map((trx) => (
+                {/* KODE YANG DIPERBAIKI: Menambahkan .filter(trx => trx.status !== 'pending') */}
+                {riwayatTransaksi.filter(trx => trx.status !== 'pending').length > 0 ? (
+                  riwayatTransaksi.filter(trx => trx.status !== 'pending').map((trx) => (
                     <div key={trx.id} className="grid grid-cols-12 px-6 py-4 border-b border-gray-50 hover:bg-gray-50 transition-colors items-center">
                       <div className="col-span-2 text-xs text-gray-500">{formatTanggal(trx.tanggal_transaksi)}</div>
                       

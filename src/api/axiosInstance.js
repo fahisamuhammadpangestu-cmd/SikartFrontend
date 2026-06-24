@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const axiosInstance = axios.create({
   // Ini adalah alamat API Laravel kita
-  baseURL: 'http://127.0.0.1:8000/api', 
+  baseURL: 'https://besikart-sibm4.karyakreasi.id/api', 
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

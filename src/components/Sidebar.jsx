@@ -35,14 +35,13 @@ const Sidebar = ({ role }) => {
   const handleLogout = () => {
     const konfirmasi = window.confirm('Apakah Anda yakin ingin keluar?');
     if (konfirmasi) {
-      localStorage.removeItem('token'); // Hapus kunci tiket
+      // 1. Bersihkan token dari ingatan browser
+      localStorage.removeItem('token'); 
+      localStorage.removeItem('user'); // (Opsional) bersihkan data user jika ada
       
-      // Arahkan kembali ke halaman login yang sesuai dengan role-nya
-      if (role === 'admin') {
-        navigate('/admin/login');
-      } else {
-        navigate('/warga/login');
-      }
+      // 2. Arahkan kembali ke SATU-SATUNYA halaman login yang ada di App.jsx
+      // 'replace: true' mencegah user kembali pakai tombol Back browser
+      navigate('/login', { replace: true });
     }
   };
 
@@ -138,7 +137,7 @@ const Sidebar = ({ role }) => {
           <div className="overflow-hidden">
             <p className="text-sm font-bold text-white truncate">
               {/* Akan menampilkan nama dari database, jika sedang loading akan menampilkan teks default sementara */}
-              {namaPengguna || (role === 'admin' ? 'Memuat...' : 'Memuat...')}
+              {namaPengguna || 'Memuat...'}
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
               Status: {role === 'admin' ? 'Administrator' : 'Warga'}

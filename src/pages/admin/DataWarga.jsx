@@ -1,120 +1,192 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2 } from 'lucide-react';
 import axiosInstance from '../../api/axiosInstance';
+import { Trash2, Megaphone, Send, Users } from 'lucide-react';
 
 const DataWarga = () => {
-  const [dataWarga, setDataWarga] = useState([]);
+  const [warga, setWarga] = useState([]);
+  const [pengumuman, setPengumuman] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchWarga = async () => {
+  // State untuk form input pengumuman baru
+  const [formPengumuman, setFormPengumuman] = useState({ judul: '', konten: '' });
+
+  // 1. Ambil data warga dan pengumuman dari Laravel
+  const fetchData = async () => {
+    setIsLoading(true);
     try {
-      const response = await axiosInstance.get('/admin/warga');
-      if (response.data.status === 'success') {
-        setDataWarga(response.data.data);
-      }
+      const resWarga = await axiosInstance.get('/admin/warga');
+      if (resWarga.data.status === 'success') setWarga(resWarga.data.data);
+
+      const resPengumuman = await axiosInstance.get('/admin/pengumuman');
+      if (resPengumuman.data.status === 'success') setPengumuman(resPengumuman.data.data);
     } catch (error) {
-      console.error('Gagal mengambil data:', error);
+      console.error('Gagal memuat data:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchWarga();
+    fetchData();
   }, []);
 
-  const handleDelete = async (id, nama) => {
-    // Konfirmasi penghapusan sesuai instruksimu
-    const confirmDelete = window.confirm(`Apakah Anda yakin ingin menghapus data warga bernama ${nama}? Data akan terhapus dari database dan warga harus melakukan registrasi ulang.`);
+  // 2. Fungsi simpan pengumuman baru
+  const handleSimpanPengumuman = async (e) => {
+    e.preventDefault();
+    if (!formPengumuman.judul || !formPengumuman.konten) return alert('Isi semua bidang judul dan konten!');
     
-    if (confirmDelete) {
+    try {
+      const response = await axiosInstance.post('/admin/pengumuman', formPengumuman);
+      if (response.data.status === 'success') {
+        alert('Pengumuman berhasil disebarkan!');
+        setFormPengumuman({ judul: '', konten: '' });
+        fetchData(); 
+      }
+    } catch (error) {
+      console.error('Gagal menyimpan pengumuman:', error);
+      alert('Gagal menyebarkan pengumuman!');
+    }
+  };
+
+  // 3. Fungsi hapus pengumuman
+  const handleHapusPengumuman = async (id) => {
+    if (window.confirm('Hapus pengumuman ini?')) {
       try {
-        await axiosInstance.delete(`/admin/warga/${id}`);
-        fetchWarga(); // Refresh data tabel
+        const response = await axiosInstance.delete(`/admin/pengumuman/${id}`);
+        if (response.data.status === 'success') fetchData();
       } catch (error) {
-        console.error('Gagal menghapus data:', error);
-        alert('Terjadi kesalahan saat menghapus data.');
+        console.error('Gagal menghapus pengumuman:', error);
+      }
+    }
+  };
+
+  // ================= YANG BARU: FUNGSI HAPUS WARGA =================
+  const handleHapusWarga = async (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus data akun warga ini?')) {
+      try {
+        const response = await axiosInstance.delete(`/admin/warga/${id}`);
+        if (response.data.status === 'success') {
+          fetchData(); // Refresh tabel setelah berhasil dihapus
+        }
+      } catch (error) {
+        console.error('Gagal menghapus data warga:', error);
+        alert('Gagal menghapus data warga.');
       }
     }
   };
 
   return (
-    <div className="w-full flex flex-col gap-6">
-      
-      {/* HEADER: Tanpa Tombol Tambah Warga */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-2">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Manajemen Warga</h1>
-          <p className="text-sm text-gray-500 mt-1">Kelola data penduduk RT 03 Cimuning</p>
+    <div className="w-full flex flex-col gap-6 font-sans pb-10">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Manajemen Warga & Informasi</h1>
+        <p className="text-sm text-gray-500 mt-1">Kelola data penduduk RT 03 Cimuning dan buat pengumuman resmi.</p>
+      </div>
+
+      {/* ================= FORM CRUD PENGUMUMAN ================= */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <div className="flex items-center gap-2 text-blue-600 font-bold text-sm mb-2">
+            <Megaphone size={18} />
+            <h2>Buat Pengumuman Baru</h2>
+          </div>
+          <p className="text-xs text-gray-400 mb-4">Informasi yang diketik di sini akan langsung muncul di halaman dashboard warga.</p>
+          
+          <form onSubmit={handleSimpanPengumuman} className="space-y-3">
+            <input 
+              type="text" 
+              placeholder="Judul Pengumuman (contoh: Jadwal Kerja Bakti)" 
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 bg-gray-50"
+              value={formPengumuman.judul}
+              onChange={(e) => setFormPengumuman({ ...formPengumuman, judul: e.target.value })}
+            />
+            <textarea 
+              placeholder="Tuliskan isi pengumuman secara detail di sini..." 
+              rows="3"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 bg-gray-50 resize-none"
+              value={formPengumuman.konten}
+              onChange={(e) => setFormPengumuman({ ...formPengumuman, konten: e.target.value })}
+            ></textarea>
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-xs transition-colors flex items-center justify-center gap-2">
+              <Send size={14} /> Sebarkan Informasi
+            </button>
+          </form>
+        </div>
+
+        {/* RIWAYAT PENGUMUMAN AKTIF */}
+        <div className="lg:col-span-2 border-l border-gray-100 lg:pl-6 overflow-y-auto max-h-[220px]">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Pengumuman Aktif saat ini ({pengumuman.length})</h3>
+          {pengumuman.length === 0 ? (
+            <p className="text-xs text-gray-400 italic">Belum ada pengumuman yang disebarkan.</p>
+          ) : (
+            <div className="space-y-3">
+              {pengumuman.map((p) => (
+                <div key={p.id} className="bg-gray-50 rounded-lg p-3 flex justify-between items-start border border-gray-200/50">
+                  <div className="overflow-hidden pr-4">
+                    <h4 className="text-sm font-bold text-gray-800 truncate">{p.judul}</h4>
+                    <p className="text-xs text-gray-500 mt-1 whitespace-pre-line">{p.konten}</p>
+                  </div>
+                  <button onClick={() => handleHapusPengumuman(p.id)} className="text-red-500 p-1.5 hover:bg-red-50 rounded transition-colors shrink-0">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* KARTU TABEL */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
-        
-        {isLoading ? (
-          <div className="p-10 flex justify-center">
-             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <div className="overflow-x-auto w-full">
-            <table className="w-full text-left border-collapse whitespace-nowrap min-w-[900px]">
-              
-              {/* KEPALA TABEL */}
-              <thead>
-                <tr className="bg-white border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                  <th className="px-6 py-4 text-center w-16">NO</th>
-                  <th className="px-6 py-4">NAMA LENGKAP</th>
-                  <th className="px-6 py-4">USERNAME</th>
-                  <th className="px-6 py-4">NIK</th>
-                  <th className="px-6 py-4">BLOK</th>
-                  <th className="px-6 py-4">NO TELEPON</th>
-                  <th className="px-6 py-4">STATUS WARGA</th>
-                  <th className="px-6 py-4 text-center">AKSI</th>
+      {/* ================= TABEL DATA WARGA ================= */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-5 bg-gray-50/50 border-b border-gray-100 flex items-center gap-2">
+          <Users size={16} className="text-gray-500" />
+          <h2 className="text-sm font-bold text-gray-900">Daftar Pengurus & Warga</h2>
+        </div>
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse whitespace-nowrap">
+            <thead>
+              <tr className="bg-white text-[10px] font-bold text-gray-400 uppercase border-b border-gray-200">
+                <th className="px-6 py-4">NO</th>
+                <th className="px-6 py-4">NAMA LENGKAP</th>
+                <th className="px-6 py-4">USERNAME</th>
+                <th className="px-6 py-4">NIK</th>
+                <th className="px-6 py-4">BLOK</th>
+                {/* KOLOM YANG DIKEMBALIKAN */}
+                <th className="px-6 py-4">NO TELEPON</th>
+                <th className="px-6 py-4">STATUS WARGA</th>
+                <th className="px-6 py-4 text-center">AKSI</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 text-sm">
+              {warga.map((w, index) => (
+                <tr key={w.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 text-gray-500">{index + 1}</td>
+                  <td className="px-6 py-4 font-bold text-gray-900">{w.nama_lengkap}</td>
+                  <td className="px-6 py-4 text-gray-500">{w.username}</td>
+                  <td className="px-6 py-4 text-gray-500">{w.nik || '-'}</td>
+                  <td className="px-6 py-4 text-gray-500">{w.blok || '-'}</td>
+                  
+                  {/* ISI KOLOM YANG DIKEMBALIKAN */}
+                  <td className="px-6 py-4 text-gray-500">{w.nomor_hp || w.no_hp || '-'}</td>
+                  <td className="px-6 py-4">
+                    <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-green-50 text-green-600 uppercase">
+                      {w.status_warga}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button 
+                      onClick={() => handleHapusWarga(w.id)} 
+                      className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                      title="Hapus Warga"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+
                 </tr>
-              </thead>
-              
-              {/* BADAN TABEL */}
-              <tbody className="divide-y divide-gray-100">
-                {dataWarga.length > 0 ? (
-                  dataWarga.map((warga, index) => (
-                    <tr key={warga.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-center text-sm text-gray-500">{index + 1}</td>
-                      <td className="px-6 py-4 text-sm font-bold text-gray-900">{warga.nama_lengkap}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{warga.username}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{warga.nik}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{warga.blok}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{warga.no_hp}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[11px] font-bold uppercase tracking-wider">
-                          {warga.status_warga}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {/* HANYA IKON TONG SAMPAH (HAPUS) */}
-                        <div className="flex justify-center items-center">
-                          <button 
-                            onClick={() => handleDelete(warga.id, warga.nama_lengkap)}
-                            className="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 p-2 rounded-lg" 
-                            title="Hapus Data"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="8" className="px-6 py-12 text-center text-sm text-gray-500">
-                      Belum ada data warga yang terdaftar.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

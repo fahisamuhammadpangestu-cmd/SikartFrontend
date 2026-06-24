@@ -6,13 +6,16 @@ import {
 } from 'lucide-react';
 
 const RiwayatWarga = () => {
-  // 1. STATE UNTUK DATA API
+  // 1. STATE UNTUK DATA API & PENCARIAN
   const [data, setData] = useState({
     total_terbayar: 0,
     tanggal_terakhir: null,
     riwayat: []
   });
   const [isLoading, setIsLoading] = useState(true);
+  
+  // State baru untuk menyimpan teks pencarian dari kotak input
+  const [searchTerm, setSearchTerm] = useState('');
 
   // 2. FUNGSI FORMATTING
   const formatRupiah = (angka) => {
@@ -33,31 +36,21 @@ const RiwayatWarga = () => {
     return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
   };
 
-  // Fungsi untuk mendapatkan gaya status badge sesuai desain aslimu
   const getStatusStyle = (statusDB) => {
     switch (statusDB) {
-      case 'pending':
-        return 'bg-slate-100 text-slate-600';
-      case 'sukses':
-        return 'bg-green-50 text-green-600';
-      case 'gagal':
-        return 'bg-red-50 text-red-600';
-      default:
-        return 'bg-gray-100 text-gray-600';
+      case 'pending': return 'bg-slate-100 text-slate-600';
+      case 'sukses': return 'bg-green-50 text-green-600';
+      case 'gagal': return 'bg-red-50 text-red-600';
+      default: return 'bg-gray-100 text-gray-600';
     }
   };
 
-  // Fungsi untuk mendapatkan ikon status
   const getStatusIcon = (statusDB) => {
     switch (statusDB) {
-      case 'pending':
-        return <Circle size={12} className="fill-slate-400 text-slate-400" />;
-      case 'sukses':
-        return <CheckCircle2 size={14} />;
-      case 'gagal':
-        return <XCircle size={14} />;
-      default:
-        return null;
+      case 'pending': return <Circle size={12} className="fill-slate-400 text-slate-400" />;
+      case 'sukses': return <CheckCircle2 size={14} />;
+      case 'gagal': return <XCircle size={14} />;
+      default: return null;
     }
   };
 
@@ -77,11 +70,8 @@ const RiwayatWarga = () => {
       const response = await axiosInstance.get('/warga/riwayat');
       if (response.data.status === 'success') {
         const apiData = response.data.data;
-        
-        // MENGHUBUNGKAN NAMA VARIABEL LARAVEL DENGAN REACT
         setData({
           total_terbayar: apiData.ringkasan.total_terbayar,
-          // Karena dari Laravel sudah diformat 'd M Y', kita bisa langsung pakai
           tanggal_terakhir: apiData.ringkasan.transaksi_terakhir, 
           riwayat: apiData.detail_riwayat
         });
@@ -96,6 +86,13 @@ const RiwayatWarga = () => {
   useEffect(() => {
     fetchRiwayat();
   }, []);
+
+  // 4. LOGIKA FILTER PENCARIAN
+  // Menyaring data riwayat berdasarkan kata kunci yang diketik user
+  const filteredRiwayat = data.riwayat?.filter((trx) => {
+    const jenisIuran = trx.tagihan ? trx.tagihan.nama_tagihan : (trx.keterangan || 'Iuran Lainnya');
+    return jenisIuran.toLowerCase().includes(searchTerm.toLowerCase());
+  }) || [];
 
   return (
     <div className="w-full flex flex-col gap-6 font-sans pb-10">
@@ -113,7 +110,7 @@ const RiwayatWarga = () => {
       
       <p className="text-sm text-gray-500 -mt-2 mb-2">Daftar riwayat iuran kas yang telah Anda kirimkan.</p>
 
-      {/* KARTU RINGKASAN (Sekarang hanya 2 grid) */}
+      {/* KARTU RINGKASAN */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Kartu 1: Total Iuran Terbayar */}
@@ -155,15 +152,17 @@ const RiwayatWarga = () => {
           <h2 className="text-sm font-bold text-gray-900">Detail Riwayat</h2>
           
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            {/* Input Cari */}
+            {/* Input Cari yang sudah disambungkan dengan state */}
             <div className="relative flex-1 sm:w-64">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search size={14} className="text-gray-400" />
               </div>
               <input 
                 type="text" 
-                placeholder="Cari transaksi..." 
+                placeholder="Cari jenis iuran..." 
                 className="w-full pl-8 pr-4 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 transition-colors bg-white"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             {/* Tombol Filter */}
@@ -190,8 +189,8 @@ const RiwayatWarga = () => {
                 <tr>
                   <td colSpan="5" className="px-6 py-10 text-center text-sm text-gray-400">Memuat data...</td>
                 </tr>
-              ) : data.riwayat?.length > 0 ? (
-                data.riwayat.map((trx) => (
+              ) : filteredRiwayat.length > 0 ? (
+                filteredRiwayat.map((trx) => (
                   <tr key={trx.id} className="hover:bg-gray-50 transition-colors">
                     
                     {/* TANGGAL UPLOAD */}
@@ -231,7 +230,9 @@ const RiwayatWarga = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="px-6 py-10 text-center text-sm text-gray-400">Belum ada riwayat transaksi.</td>
+                  <td colSpan="5" className="px-6 py-10 text-center text-sm text-gray-400">
+                    {searchTerm ? 'Pencarian tidak ditemukan.' : 'Belum ada riwayat transaksi.'}
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -241,7 +242,7 @@ const RiwayatWarga = () => {
         {/* Footer Tabel (Pagination) */}
         <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50/30">
           <p className="text-xs text-gray-500 font-medium">
-            Menampilkan {data.riwayat?.length || 0} riwayat iuran
+            Menampilkan {filteredRiwayat.length} riwayat iuran
           </p>
           <div className="flex items-center gap-2">
             <button className="p-1.5 border border-gray-200 rounded text-gray-500 hover:bg-gray-100 transition-colors">

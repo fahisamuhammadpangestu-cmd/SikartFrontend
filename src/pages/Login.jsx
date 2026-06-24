@@ -137,7 +137,7 @@ const Login = () => {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm xl:text-base font-semibold text-gray-700">Kata Sandi</label>
-                <a href="#" className="text-sm text-blue-600 hover:text-blue-700 font-medium">Lupa Sandi?</a>
+                <a href="#" className="text-sm text-blue-600 hover:text-blue-700 font-medium"></a>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">

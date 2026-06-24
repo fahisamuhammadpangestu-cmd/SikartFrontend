@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight } from 'lucide-react';
+// 1. TAMBAH IKON MEGAPHONE DAN CALENDAR DI SINI
+import { ArrowRight, Megaphone, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 
@@ -14,13 +15,23 @@ const DashboardWarga = () => {
     riwayat_terkini: []
   });
 
-  // 1. FUNGSI MENGAMBIL DATA DARI BACKEND
+  // 2. TAMBAH STATE UNTUK PENGUMUMAN
+  const [pengumuman, setPengumuman] = useState([]);
+
+  // FUNGSI MENGAMBIL DATA DARI BACKEND
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
+        // Mengambil data dashboard warga
         const response = await axiosInstance.get('/warga/dashboard');
         if (response.data.status === 'success') {
           setData(response.data.data);
+        }
+
+        // 3. TAMBAH PERINTAH MENGAMBIL DATA PENGUMUMAN
+        const resPengumuman = await axiosInstance.get('/warga/pengumuman');
+        if (resPengumuman.data.status === 'success') {
+          setPengumuman(resPengumuman.data.data);
         }
       } catch (error) {
         console.error('Gagal mengambil data dashboard:', error);
@@ -31,7 +42,7 @@ const DashboardWarga = () => {
     fetchDashboard();
   }, []);
 
-  // 2. FUNGSI FORMATTING
+  // FUNGSI FORMATTING (TIDAK ADA YANG DIUBAH)
   const formatRupiah = (angka) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency', currency: 'IDR', minimumFractionDigits: 0
@@ -50,7 +61,6 @@ const DashboardWarga = () => {
     return date.toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
   };
 
-  // Fungsi pembantu untuk menentukan warna badge berdasarkan status dari database
   const getStyleByStatus = (status) => {
     switch (status) {
       case 'pending':
@@ -79,7 +89,7 @@ const DashboardWarga = () => {
   return (
     <div className="w-full flex flex-col gap-6 font-sans">
       
-      {/* JUDUL HALAMAN (Breadcrumb di bawahnya sudah dihapus) */}
+      {/* JUDUL HALAMAN */}
       <div className="mt-2">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
       </div>
@@ -95,25 +105,49 @@ const DashboardWarga = () => {
 
       {/* 3 KARTU RINGKASAN */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
         {/* Kartu Lunas */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center h-28">
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Iuran Lunas</p>
           <h3 className="text-3xl font-bold text-[#10B981]">{data.ringkasan.lunas}</h3>
         </div>
-
-        {/* Kartu Ditolak (Sebelumnya Tunggakan) */}
+        {/* Kartu Ditolak */}
         <div className="bg-[#FFE4E6] rounded-xl shadow-sm p-6 flex flex-col justify-center h-28">
           <p className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Ditolak</p>
           <h3 className="text-3xl font-bold text-[#E11D48]">{data.ringkasan.ditolak}</h3>
         </div>
-
         {/* Kartu Menunggu */}
         <div className="bg-[#FEF9C3] rounded-xl shadow-sm p-6 flex flex-col justify-center h-28">
           <p className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Menunggu</p>
           <h3 className="text-3xl font-bold text-[#EAB308]">{data.ringkasan.menunggu}</h3>
         </div>
       </div>
+
+      {/* 4. AREA PENGUMUMAN (Hanya muncul jika ada data pengumuman) */}
+      {pengumuman.length > 0 && (
+        <div className="space-y-3 mt-2">
+          <div className="flex items-center gap-2 text-gray-700 font-bold text-sm px-1">
+            <Megaphone size={16} className="text-amber-500 animate-bounce" />
+            <h2>Informasi Penting dari Pengurus RT</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-3">
+            {pengumuman.map((item) => (
+              <div key={item.id} className="bg-gradient-to-r from-amber-50 to-orange-50/50 rounded-xl border border-amber-200/70 p-5 shadow-sm relative overflow-hidden">
+                {/* Ikon Megaphone Besar Transparan di Belakang */}
+                <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 opacity-5 text-amber-900 pointer-events-none">
+                  <Megaphone size={120} />
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">
+                  <Calendar size={12} />
+                  <span>{new Date(item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                </div>
+                <h3 className="text-sm font-bold text-amber-950 mb-1">{item.judul}</h3>
+                <p className="text-xs text-amber-900/80 leading-relaxed whitespace-pre-line">{item.konten}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* DAFTAR STATUS IURAN TERKINI */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-2 mb-10">
